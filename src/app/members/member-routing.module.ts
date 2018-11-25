@@ -4,7 +4,7 @@ import { Routes, RouterModule } from '@angular/router';
 const routes: Routes = [
   { path: '', 
     // canActivate: [AuthGuardService],
-    loadChildren: './members/tabs/tabs.module#TabsModule' 
+    loadChildren: './tabs/tabs.module#TabsModule' 
   },
   { path: 'complaint', loadChildren: './complaint/complaint.module#ComplaintPageModule' },
   { path: 'report', loadChildren: './report/report.module#ReportPageModule' },

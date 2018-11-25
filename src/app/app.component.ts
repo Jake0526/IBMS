@@ -21,9 +21,6 @@ export class AppComponent {
     }, 
     {
       title: 'Report Incident', url: '/members/report', icon: 'warning'
-    }, 
-    {
-      title: 'Logout', url: '/login', icon: 'log-out'
     }
   ]
 
