@@ -11,8 +11,8 @@ const routes: Routes = [
     component: TabsComponent,
     children: [
       {
-        path: '',
-        redirectTo: '/tabs/(home:home)',
+        path: 'members',
+        redirectTo: '/members/tabs/(home:home)',
         pathMatch: 'full',
       },
       {
@@ -33,8 +33,8 @@ const routes: Routes = [
     ]
   },
   {
-    path: '',
-    redirectTo: '/tabs/(home:home)',
+    path: 'members',
+    redirectTo: '/members/tabs/(home:home)',
     pathMatch: 'full',
   },
 ];
