@@ -11,6 +11,23 @@
   <ion-item>
     <ion-textarea placeholder="Short Description of Report"></ion-textarea>
   </ion-item>
+  <ion-button shape="round" color="dark" fill="outline" (click)="selectImage()">
+    <ion-icon slot="start" name="camera"></ion-icon>
+  </ion-button>
+  <br />
+  <ion-list>
+    <ion-item *ngFor="let img of images; index as pos">
+      <ion-thumbnail slot="start">
+        <ion-img [src]="img.path"></ion-img>
+      </ion-thumbnail>
+
+      <ion-label>{{ img.name }}</ion-label>
+
+      <ion-button slot="end" fill="clear" (click)="startUpload(img)">
+        <ion-icon slot="icon-only" name="cloud-upload"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
   <br />
   <ion-button shape="round" color="primary" fill="outline">Submit Report</ion-button>
 </ion-content>

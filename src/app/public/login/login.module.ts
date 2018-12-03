@@ -6,7 +6,6 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { LoginPage } from './login.page';
-import { HTTP } from '@ionic-native/http/ngx';
 
 const routes: Routes = [
   {
@@ -22,7 +21,7 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  providers: [HTTP],
+  providers: [],
   declarations: [LoginPage]
 })
 export class LoginPageModule {}

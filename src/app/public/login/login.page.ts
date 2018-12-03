@@ -46,8 +46,6 @@ export class LoginPage implements OnInit {
     .then(data => {
       var result = JSON.parse(data.data);
 
-      console.log(data);
-
       if (!result) {
         console.log("Incorrect Username or password");
         this.presentAlert("Incorrect Username or password");
