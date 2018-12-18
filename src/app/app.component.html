@@ -10,10 +10,19 @@
         <ion-content>
           <ion-list>
             <ion-menu-toggle auto-hide="false" *ngFor="let p of appMenu">
-              <ion-item [routerDirection]="'root'" [routerLink]="[p.url]">
-                <ion-icon slot="start" [name]="p.icon"></ion-icon>
-                <ion-label>{{p.title}}</ion-label>
-              </ion-item>
+              <div *ngIf="p.title == 'Home'">
+                <ion-item tab="home" href="/members/tabs/(home:home)">
+                  <ion-icon slot="start" [name]="p.icon"></ion-icon>
+                  <ion-label>{{p.title}}</ion-label>
+                </ion-item>
+              </div>
+
+              <div *ngIf="p.title != 'Home'">
+                <ion-item [routerDirection]="'root'" [routerLink]="[p.url]">
+                  <ion-icon slot="start" [name]="p.icon"></ion-icon>
+                  <ion-label>{{p.title}}</ion-label>
+                </ion-item>
+              </div>
             </ion-menu-toggle>
           </ion-list>
         </ion-content>

@@ -9,9 +9,9 @@
 
 <ion-content padding>
   <ion-item>
-    <ion-textarea placeholder="Short Description of Report"></ion-textarea>
+    <ion-textarea [(ngModel)]="reportDescription" placeholder="Short Description of Report"></ion-textarea>
   </ion-item>
-  <ion-button shape="round" color="dark" fill="outline" (click)="selectImage()">
+  <ion-button shape="round" color="dark" fill="outline" (click)="selectImage()" *ngIf="images.length < 2">
     <ion-icon slot="start" name="camera"></ion-icon>
   </ion-button>
   <br />
@@ -23,11 +23,15 @@
 
       <ion-label>{{ img.name }}</ion-label>
 
-      <ion-button slot="end" fill="clear" (click)="startUpload(img)">
+      <!-- <ion-button slot="end" fill="clear" (click)="startUpload(img)">
         <ion-icon slot="icon-only" name="cloud-upload"></ion-icon>
+      </ion-button> -->
+
+      <ion-button slot="end" fill="clear" (click)="deleteImage(img, pos)">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
     </ion-item>
   </ion-list>
   <br />
-  <ion-button shape="round" color="primary" fill="outline">Submit Report</ion-button>
+  <ion-button shape="round" color="primary" fill="outline" (click)="imageLooper()">Submit Report</ion-button>
 </ion-content>

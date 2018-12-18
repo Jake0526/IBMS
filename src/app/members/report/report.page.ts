@@ -5,8 +5,11 @@ import { File, FileEntry } from '@ionic-native/file/ngx';
 import { HttpClient } from '@angular/common/http';
 import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Storage } from '@ionic/storage';
+import { Geolocation } from '@ionic-native/geolocation/ngx';
+import { AuthenticationService } from '../../services/authentication.service';
 
 import { finalize } from 'rxjs/operators';
+import { LoadedRouterConfig } from '@angular/router/src/config';
 
 const STORAGE_KEY = 'my_images';
 
@@ -17,16 +20,43 @@ const STORAGE_KEY = 'my_images';
 })
 export class ReportPage implements OnInit {
 
+  userData = {
+    id: 0
+  };
+
+  x = 0;
   images = [];
+  currentLat = 0;
+  currentLng = 0;
+  reportDescription = "";
+  formData = new FormData();
 
   constructor(private camera: Camera, private file: File, private http: HttpClient, private webview: WebView,
     private actionSheetController: ActionSheetController, private toastController: ToastController,
     private storage: Storage, private plt: Platform, public loadingCtrl: LoadingController,
-    private ref: ChangeDetectorRef) { }
+    private ref: ChangeDetectorRef, private geolocation: Geolocation,
+    private authService: AuthenticationService) { }
 
   ngOnInit() {
     this.plt.ready().then(() => {
       this.loadStoredImages();
+
+      this.geolocation.getCurrentPosition().then((resp) => {
+        this.currentLat = resp.coords.latitude
+        this.currentLng = resp.coords.longitude
+      }).catch((error) => {
+        alert('Error getting location' + error);
+      });
+
+      this.storage.get('userData').then((val) => {
+        if(val == null) {
+          this.authService.logout();
+        }
+
+        this.userData.id = val.id;
+
+        console.log(val);
+      });
     });
   }
 
@@ -63,32 +93,34 @@ export class ReportPage implements OnInit {
   }
 
   async selectImage() {
-    const actionSheet = await this.actionSheetController.create({
-      header: "Select Image source",
-      buttons: [{
-        text: 'Load from Library',
-        handler: () => {
-          this.takePicture(this.camera.PictureSourceType.PHOTOLIBRARY);
-        }
-      },
-      {
-        text: 'Use Camera',
-        handler: () => {
-          this.takePicture(this.camera.PictureSourceType.CAMERA);
-        }
-      },
-      {
-        text: 'Cancel',
-        role: 'cancel'
-      }
-      ]
-    });
-    await actionSheet.present();
+    this.takePicture(this.camera.PictureSourceType.CAMERA);
+
+    // const actionSheet = await this.actionSheetController.create({
+    //   header: "Select Image source",
+    //   buttons: [{
+    //     text: 'Load from Library',
+    //     handler: () => {
+    //       this.takePicture(this.camera.PictureSourceType.PHOTOLIBRARY);
+    //     }
+    //   },
+    //   {
+    //     text: 'Use Camera',
+    //     handler: () => {
+    //       this.takePicture(this.camera.PictureSourceType.CAMERA);
+    //     }
+    //   },
+    //   {
+    //     text: 'Cancel',
+    //     role: 'cancel'
+    //   }
+    //   ]
+    // });
+    // await actionSheet.present();
   }
 
   takePicture(sourceType: PictureSourceType) {
     var options: CameraOptions = {
-      quality: 100,
+      quality: 50,
       sourceType: sourceType,
       saveToPhotoAlbum: false,
       correctOrientation: true
@@ -152,42 +184,79 @@ export class ReportPage implements OnInit {
       var correctPath = imgEntry.filePath.substr(0, imgEntry.filePath.lastIndexOf('/') + 1);
 
       this.file.removeFile(correctPath, imgEntry.name).then(res => {
-        this.presentToast('File removed.');
+        // this.presentToast('File removed.');
       });
     });
   }
 
-  startUpload(imgEntry) {
-    this.file.resolveLocalFilesystemUrl(imgEntry.filePath)
+  imageLooper() {
+
+    if(this.x < this.images.length) {
+
+      this.file.resolveLocalFilesystemUrl(this.images[this.x].filePath)
       .then(entry => {
-        (<FileEntry>entry).file(file => this.readFile(file))
+          ( < FileEntry > entry).file(file => this.readFile(file))
       })
       .catch(err => {
-        this.presentToast('Error while reading file.');
+          this.presentToast('Error while reading file ' + this.images[this.x] + '.');
+
+          this.x+=1;
+
+          this.imageLooper();
+      });
+    }else {
+
+      this.uploadImageData();
+    }
+  }
+
+  startUpload(imgEntry) {
+
+    // this.imageLooper();
+
+    this.file.resolveLocalFilesystemUrl(imgEntry.filePath)
+      .then(entry => {
+          ( < FileEntry > entry).file(file => this.readFile(file))
+      })
+      .catch(err => {
+          this.presentToast('Error while reading file.');
       });
   }
 
   readFile(file: any) {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const formData = new FormData();
-      const imgBlob = new Blob([reader.result], {
-        type: file.type
-      });
-      formData.append('file', imgBlob, file.name);
-      this.uploadImageData(formData);
+        const imgBlob = new Blob([reader.result], {
+            type: file.type
+        });
+
+        this.formData.append('file' + this.x, imgBlob, file.name);
+
+        this.x+=1;
+
+        this.imageLooper();
     };
     reader.readAsArrayBuffer(file);
   }
 
-  async uploadImageData(formData: FormData) {
+  async uploadImageData() {
+    
+    this.formData.append('locationLat', String(this.currentLat));
+    this.formData.append('locationLng', String(this.currentLng));
+    this.formData.append('description', String(this.reportDescription));
+    this.formData.append('imageCount', String(this.images.length));
+    this.formData.append('type', 'Emergency');
+    this.formData.append('userId', String(this.userData.id));
+
+    alert(this.userData.id);
+
     const loading = await this.loadingCtrl.create({
       message: 'Uploading image...'
     });
     
     await loading.present();
 
-    this.http.post("http://localhost:8000/api/submit-report", formData)
+    this.http.post("http://192.168.0.16:8000/api/submit-report", this.formData)
       .pipe(
         finalize(() => {
           loading.dismiss();
@@ -195,9 +264,19 @@ export class ReportPage implements OnInit {
       )
       .subscribe(res => {
         if (res['success']) {
-          this.presentToast('File upload complete.')
+          this.presentToast('File upload complete.');
+
+          var count = this.images.length;
+
+          for (var i = 0; i < count; i++) {
+            this.deleteImage(this.images[0], 0);
+          }
+
+          this.x = 0;
         } else {
-          this.presentToast('File upload failed.')
+          this.presentToast('File upload failed.');
+
+          this.x = 0;
         }
       });
   }

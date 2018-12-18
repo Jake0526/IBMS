@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Storage } from '@ionic/storage';
 
 @Component({
   selector: 'app-complaint',
@@ -7,9 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ComplaintPage implements OnInit {
 
-  constructor() { }
+  constructor(private storage: Storage) { }
+
+  userData = {};
 
   ngOnInit() {
+    this.storage.get('userData').then((val) => {
+      this.userData = val;
+    });
   }
 
 }

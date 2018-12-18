@@ -11,6 +11,7 @@ export class ProfilePage implements OnInit {
   constructor(private authService: AuthenticationService) { }
 
   ngOnInit() {
+    console.log(this.authService);
   }
 
   logout() {
